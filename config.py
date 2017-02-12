@@ -3,7 +3,7 @@ meta_tbl = {}
 
 # example
 # hidden layer 1 input field
-meta['hidden1'] = metaparam('hidden1', 10, 1, 0, 3)
+meta_tbl['hidden1'] = metaparam('hidden1', 10, 1, 0, 3)
 
 # meta parameters class 
 class metaparam():
