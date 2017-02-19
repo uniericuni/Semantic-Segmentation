@@ -1,16 +1,22 @@
+# Global variables (Macros)
+
 # meta parameters table
 meta_tbl = {}
 
 # example
-# hidden layer 1 input field
-meta_tbl['hidden1'] = metaparam('hidden1', 10, 1, 0, 3)
+meta_tbl['hidden1'] = metaparam('hidden1', 10, 1, 'SAME', 30)
 
-# meta parameters class 
+# meta parameters class
+# name: layer name scope
+# field: shape of filter, numpy array with ints specified [height, width, input channel]
+# stride: sampling rate of the layer
+# padding: padding method, either 'VALID' or 'SAME', accroding the Tensorflow documentation
+# depth: expected output layer depth
 class metaparam():
     def __init__(self, name, field, stride, padding, depth):
         self.name = name
         self.field = field  
-        self.strid = stide
+        self.stride = stide
         self.padding = padding
         self.depth = depth
     
