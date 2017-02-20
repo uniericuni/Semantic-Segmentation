@@ -290,8 +290,7 @@ def inference(images):
 
   # dropout 6
   # TODO: assign keep probability
-  keep_prob = tf.placeholder(tf.float32)
-  drop6 = tf.nn.dropout(fc6, keep_prob)
+  drop6 = tf.nn.dropout(fc6, 0.5)
 
   # fully connected 7
   with tf.variable_scope('fc7') as scope:
@@ -309,8 +308,7 @@ def inference(images):
     _activation_summary(fc7)
 
   # dropout 7
-  keep_prob = tf.placeholder(tf.float32)
-  drop7 = tf.nn.dropout(fc7, keep_prob)
+  drop7 = tf.nn.dropout(fc7, 0.5)
 
   # score fr
   with tf.variable_scope('score_fr') as scope:
