@@ -1,3 +1,5 @@
+
+'''
 # Global variables (Macros)
 
 # meta parameters table
@@ -24,3 +26,4 @@ class metaparam():
         if (width-self.filed+2*self.padding)%self.stride==0:
             return -1
         return (width-self.filed+2*padding)/stride + 1
+'''

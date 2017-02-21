@@ -209,38 +209,44 @@ def inputs(eval_data):
     labels = tf.cast(labels, tf.float16)
   return images, labels
 
-# TODO: assign learning rate, padding, bias value
-# TODO: add wrapper, or global
-# TODO: SCOPE_NUM, IN_CH, OUT_CH, BUFF
-def module(conv_num, out_ch):
+
+def module_wrap(images, in_ch):
+  IN_CH = {0:in_ch}
+  SCOPE_NUM = {0:1}
+  OUT_CH = {0:3}
+  BUFF = {0:image}
+
+  # TODO: assign learning rate, padding, bias value
+  # TODO: change indentation
+  def module(conv_num, out_ch):
+
+    # conv
+    for i in range(0,conv_num):  
+      scope_name = 'conv'+str(SCOPE_NUM{0})+str(i)
+      with tf.variable_scope(scope_name) as scope:
+        kernel = _variable_with_weight_decay('weights',
+                                             shape=[3, 3, IN_CH{0}, out_ch],
+                                             stddev=5e-2,
+                                             wd=1*WEIGHT_DECAY)
+        IN_CH{0} = out_ch
+        conv = tf.nn.conv2d(BUFF{0}, kernel, [1, 1, 1, 1], padding='SAME')
+        bias = _bias_with_weight_decay( 'biases',
+                                        shape=[out_ch],
+                                        val=0.0,
+                                        wd=0*WEIGHT_DECAY)
+        pre_activation = tf.nn.bias_add(conv, biases)
+        BUFF{0} = tf.nn.relu(pre_activation, name=scope.name)
+        _activation_summary(conv_biased)
  
-  OUT_CH = out_ch 
+    # pool
+    scope_name = 'pool'+str(SCOPE_NUM{0})
+    BUFF{0} = tf.nn.max_pool(BUFF{0}, ksize=[2, 2, out_ch, out_ch], strides=[1, 2, 2, 1],
+                             padding='SAME', name=scope_name)
+    SCOPE_NUM += 1
+    IN_CH{0} = out_ch
+    return BUFF{0}
 
-  # conv
-  for i in range(0,conv_num):  
-    scope_name = 'conv'+str(SCOPE_NUM)+str(i)
-    with tf.variable_scope(scope_name) as scope:
-      kernel = _variable_with_weight_decay('weights',
-                                           shape=[3, 3, IN_CH, OUT_CH],
-                                           stddev=5e-2,
-                                           wd=1*WEIGHT_DECAY)
-      IN_CH = OUT_CH
-      conv = tf.nn.conv2d(BUFF, kernel, [1, 1, 1, 1], padding='SAME')
-      bias = _bias_with_weight_decay( 'biases',
-                                      shape=[OUT_CH],
-                                      val=0.0,
-                                      wd=0*WEIGHT_DECAY)
-      pre_activation = tf.nn.bias_add(conv, biases)
-      BUFF = tf.nn.relu(pre_activation, name=scope.name)
-      _activation_summary(conv_biased)
-
-  # pool
-  scope_name = 'pool'+str(SCOPE_NUM)
-  BUFF = tf.nn.max_pool(BUFF, ksize=[2, 2, OUT_CH, OUT_CH], strides=[1, 2, 2, 1],
-                         padding='SAME', name=scope_name)
-
-  SCOPE_NUM += 1
-  IN_CH = out_ch
+  return module
 
 def inference(images):
   """Build the CIFAR-10 model.
@@ -257,21 +263,22 @@ def inference(images):
   # by replacing all instances of tf.get_variable() with tf.Variable().
   #
 
-  # 2 conv + 1 pool
-  module(2, 64)
+  module = modele_wrap(images, 3)
 
   # 2 conv + 1 pool
-  module(2, 128)
+  pool1 = module(2, 64)
+
+  # 2 conv + 1 pool
+  pool2 = module(2, 128)
 
   # 3 conv + 1 pool
-  module(3, 256)
+  pool3 = module(3, 256)
 
   # 3 conv + 1 pool
-  module(3, 512)
-  pool4 = BUFF
+  pool4 = module(3, 512)
 
   # 3 conv + 1 pool
-  module(3, 512)
+  pool5 = module(3, 512)
 
   # fully connected 6
   with tf.variable_scope('fc6') as scope:
@@ -367,7 +374,6 @@ def inference(images):
     _activation_summary(upscore16)
 
   # score
-  # TODO: IMAGE_SIZE
   score = tf.image.pad_to_bounding_box(upscore16, 27, 27, IMAGE_SIZE, IMAGE_SIZE)
 
   '''
@@ -472,18 +478,6 @@ def inference(images):
   # pool2
   pool2 = tf.nn.max_pool(conv1, ksize=[2, 2, 128, 128], strides=[1, 2, 2, 1],
                          padding='SAME', name='pool2')
-  '''
-
-
-
-
-
-
-
-
-
-
-
 
   # norm1
   norm1 = tf.nn.lrn(pool1, 4, bias=1.0, alpha=0.001 / 9.0, beta=0.75,
@@ -526,6 +520,7 @@ def inference(images):
     biases = _variable_on_cpu('biases', [192], tf.constant_initializer(0.1))
     local4 = tf.nn.relu(tf.matmul(local3, weights) + biases, name=scope.name)
     _activation_summary(local4)
+  '''
 
   # linear layer(WX + b),
   # We don't apply softmax here because
