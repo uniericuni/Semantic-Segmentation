@@ -337,7 +337,7 @@ def inference(images):
                                                 shape=[4, 4, 21, 21],
                                                 stddev=5e-2,
                                                 wd=False)
-        upscore2 = tf.nn.conv2d_transpose(score_fr, kernel, [21, 4, 4, 21], [1, 2, 2, 1], padding='VALID')
+        upscore2 = tf.nn.conv2d_transpose(score_fr, kernel, [1, 4, 4, 21], [1, 2, 2, 1], padding='VALID')
         _activation_summary(upscore2)
 
     # score_pool4
