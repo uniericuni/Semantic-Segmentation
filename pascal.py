@@ -213,7 +213,7 @@ def inference(images):
                                                 shape=[7, 7, 512, 4096],
                                                 stddev=5e-2,
                                                 wd=1*WEIGHT_DECAY)
-        conv = tf.nn.conv2d(BUFF, kernel, [1, 1, 1, 1], padding='VALID')
+        conv = tf.nn.conv2d(pool5, kernel, [1, 1, 1, 1], padding='VALID')
         bias = _bias_with_weight_decay( 'biases',
                                         shape=[4096],
                                         val=0.0,
