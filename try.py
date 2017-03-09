@@ -7,19 +7,21 @@ from __future__ import print_function
 import argparse
 import sys
 import tensorflow as tf
+import read_pascal
+import pascal
 
 from config import *
 
 FLAG = None
 
-def main():
+def main(argv):
 
     # import data
-    pascal_reader = PascalReader()
+    pascal_reader = read_pascal.PascalReader()
 
     # Create the model
     x = tf.placeholder(tf.float32) #shape=[batch size, dimemsionality] 
-    y = inference(x)
+    y = pascal.inference(x)
 
     # Define loss and optimizer
     y_ = tf.placeholder(tf.float32)
@@ -38,14 +40,16 @@ def main():
     # Training
     for _ in range(MAX_ITER):
         batch_xs, batch_ys = pascal_reader.next_batch(BATCH_SIZE)
-        sess.run(train_step, feed_dict={x: batch_batch_xs, y_: batch_ys}
+        sess.run(train_step, feed_dict={x: batch_batch_xs, y_: batch_ys})
 
     # Testing
     # TODO: testing reader
+    '''
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     print(sess.run(accuracy, feed_dict={x: pascal.test.images,
                                         y_: mnist.test.labels})
+    '''
 
 if __name__=='__main__':
     '''

@@ -4,7 +4,7 @@ import numpy as np
 
 class PascalReader:
     
-    def __init__(self, arg):
+    def __init__(self):
         self.trainlist_filename = './VOC2011/ImageSets/Segmentation/train.txt'
         self.train_image_dir = './VOC2011/JPEGImages/'
         self.train_label_dir = './VOC2011/SegmentationClass/'
