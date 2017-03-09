@@ -1,8 +1,10 @@
+'''
 # input height/width
 IMAGE_SIZE = 424
 
 # input dimension
 DIM = IMAGE_SIZE*IMAGE_SIZE
+'''
 
 # patchwise batch size
 BATCH_SIZE = 1
@@ -18,3 +20,5 @@ MAX_ITER = 1e+5
 
 # learning rate
 LR = 1e-12
+
+INIT_PADDING = 100

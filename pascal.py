@@ -297,7 +297,7 @@ def inference(images):
         _activation_summary(upscore16)
 
     # score
-    score = tf.image.pad_to_bounding_box(upscore16, 27, 27, IMAGE_SIZE, IMAGE_SIZE)
+    score = tf.image.pad_to_bounding_box(upscore18, 27, 27, images.shpae.dims[1], images.shpae.dims[2])
 
     # linear layer(WX + b),
     # We don't apply softmax here because
