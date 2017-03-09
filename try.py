@@ -8,26 +8,22 @@ import argparse
 import sys
 import tensorflow as tf
 
+from config import *
+
 FLAG = None
-MAX_ITER = 10000
-BATCH_SIZE = 20
-LR = 1e-12
 DIM
 
 def main():
 
-    # imort data
+    # import data
     # TODO: the following line
     pascal = read_pascal()
 
     # Create the model
     x = tf.placeholder(tf.float32, shape=[BATCH_SIZE, DIM]) #shape=[batch size, dimemsionality] 
-    # W = tf.Variable(tf.zeros([dim, outDim]))
-    # b = tf.Variable(tf.zeros([outDim]))
-    # y = tf.matmul(x,W)+b
+    y = inference(x)
 
     # Define loss and optimizer
-    # TODO: assign inference, logits=output of inference
     y_ = tf.placeholder(tf.float32, [BATCH_SIZE, DIM])
     cross_entropy = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))

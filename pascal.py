@@ -40,42 +40,37 @@ import re
 import sys
 import tarfile
 
+from config import *
 from six.moves import urllib
+
 import tensorflow as tf
 
-import cifar10_input
-
 FLAGS = tf.app.flags.FLAGS
-WEIGHT_DECAY = 5e-4
 
 # Basic model parameters.
-tf.app.flags.DEFINE_integer('batch_size', 128,
+tf.app.flags.DEFINE_integer('batch_size', BATCH_SIZE,
                             """Number of images to process in a batch.""")
 tf.app.flags.DEFINE_string('data_dir', '/tmp/cifar10_data',
                             """Path to the CIFAR-10 data directory.""")
 tf.app.flags.DEFINE_boolean('use_fp16', False,
                             """Train the model using fp16.""")
 
-# Global constants describing the CIFAR-10 data set.
-IMAGE_SIZE = cifar10_input.IMAGE_SIZE
-NUM_CLASSES = cifar10_input.NUM_CLASSES
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = cifar10_input.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
-NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = cifar10_input.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
-
-
+'''
 # Constants describing the training process.
 MOVING_AVERAGE_DECAY = 0.9999           # The decay to use for the moving average.
 NUM_EPOCHS_PER_DECAY = 350.0            # Epochs after which learning rate decays.
 LEARNING_RATE_DECAY_FACTOR = 0.1    # Learning rate decay factor.
 INITIAL_LEARNING_RATE = 0.1             # Initial learning rate.
+'''
 
 # If a model is trained with multiple GPUs, prefix all Op names with tower_name
 # to differentiate the operations. Note that this prefix is removed from the
 # names of the summaries when visualizing a model.
 TOWER_NAME = 'tower'
 
+'''
 DATA_URL = 'http://www.cs.toronto.edu/~kriz/cifar-10-binary.tar.gz'
-
+'''
 
 def _activation_summary(x):
     """Helper to create summaries for activations.
@@ -248,14 +243,6 @@ def module_wrap(images, in_ch):
     return module
 
 def inference(images):
-    """Build the CIFAR-10 model.
-
-    Args:
-        images: Images returned from distorted_inputs() or inputs().
-
-    Returns:
-        Logits.
-    """
     # We instantiate all variables using tf.get_variable() instead of
     # tf.Variable() in order to share variables across multiple GPU training runs.
     # If we only ran this model on a single GPU, we could simplify this function
@@ -385,7 +372,7 @@ def inference(images):
 
     return softmax_linear
 
-
+'''
 def loss(logits, labels):
     """Add L2Loss to all the trainable variables.
 
@@ -435,7 +422,6 @@ def _add_loss_summaries(total_loss):
         tf.summary.scalar(l.op.name, loss_averages.average(l))
 
     return loss_averages_op
-
 
 def train(total_loss, global_step):
     """Train CIFAR-10 model.
@@ -492,7 +478,6 @@ def train(total_loss, global_step):
 
     return train_op
 
-
 def maybe_download_and_extract():
     """Download and extract the tarball from Alex's website."""
     dest_directory = FLAGS.data_dir
@@ -511,3 +496,4 @@ def maybe_download_and_extract():
         print('Successfully downloaded', filename, statinfo.st_size, 'bytes.')
 
     tarfile.open(filepath, 'r:gz').extractall(dest_directory)
+'''
