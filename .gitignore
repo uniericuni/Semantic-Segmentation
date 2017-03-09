@@ -1,2 +1,6 @@
 resource/*
 VOC2011/*
+image/*
+
+*.pdf
+*.pyc
