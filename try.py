@@ -9,6 +9,10 @@ import sys
 import tensorflow as tf
 
 FLAG = None
+MAX_ITER = 10000
+BATCH_SIZE = 20
+LR = 1e-12
+DIM
 
 def main():
 
@@ -17,25 +21,23 @@ def main():
     pascal = read_pascal()
 
     # Create the model
-    # TODO: define dim, outDim
-    x = tf.placeholder(tf.float32, shape=[None, dim]) #shape=[batch size, dimemsionality] 
+    x = tf.placeholder(tf.float32, shape=[BATCH_SIZE, DIM]) #shape=[batch size, dimemsionality] 
     # W = tf.Variable(tf.zeros([dim, outDim]))
     # b = tf.Variable(tf.zeros([outDim]))
-    y = tf.matmul(x,W)+b
+    # y = tf.matmul(x,W)+b
 
     # Define loss and optimizer
     # TODO: assign inference, logits=output of inference
-    y_ = tf.placeholder(tf.float32, [None, outDim])
+    y_ = tf.placeholder(tf.float32, [BATCH_SIZE, DIM])
     cross_entropy = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
-    train_step = tf.train.GradientDescentOptimizer(0.5).mimize(cross_entropy)
+    train_step = tf.train.GradientDescentOptimizer(LR).minimize(cross_entropy)
 
     # Session Define
     sess = tf.InteractiveSession()
     tf.global_variables_initializer().run()
 
     # Training
-    # TODO: define MAX_ITER, BATCH_SIZE
     for _ in range(MAX_ITER):
         batch_xs, batch_ys = pascal.train.next_batch(BATCH_SIZE)
         sess.run(train_step, feed_dict={x: batch_batch_xs, y_: batch_ys}
