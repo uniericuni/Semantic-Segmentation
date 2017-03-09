@@ -11,7 +11,6 @@ import tensorflow as tf
 from config import *
 
 FLAG = None
-DIM
 
 def main():
 
@@ -49,8 +48,11 @@ def main():
                                         y_: mnist.test.labels})
 
 if __name__=='__main__':
+    '''
     parser = argparse.ArgumentParser()
     # TODO: the following line
     parser.add_argument('--data_dir', type=str, default=route, help='Directory for storing data')
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main, argv=[sys.argv[0]]+unparsed)
+    '''
+    tf.app.run(main=main, argv=[sys.argv[0]])

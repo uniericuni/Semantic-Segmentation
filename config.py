@@ -1,8 +1,20 @@
-IMAGE_SIZE = cifar10_input.IMAGE_SIZE
-NUM_CLASSES = cifar10_input.NUM_CLASSES
-NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = cifar10_input.NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
-NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = cifar10_input.NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
+# input height/width
+IMAGE_SIZE = 424
+
+# input dimension
+DIM = IMAGE_SIZE*IMAGE_SIZE
+
+# number of classes
+NUM_CLASSES = 21
+
+# weight regularization 
 WEIGHT_DECAY = 5e-4
-MAX_ITER = 10000
+
+# maximum iteration number
+MAX_ITER = 1e+5
+
+# patchwise batch size
 BATCH_SIZE = 20
+
+# learning rate
 LR = 1e-12
