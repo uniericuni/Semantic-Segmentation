@@ -33,9 +33,13 @@ def main():
         tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
     train_step = tf.train.GradientDescentOptimizer(LR).minimize(cross_entropy)
 
+    init = tf.global_variables_initializer()
+    
     # Session Define
-    sess = tf.InteractiveSession()
-    tf.global_variables_initializer().run()
+    #sess = tf.InteractiveSession()
+    sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
+                                            log_device_placement=False))
+    sess.run(init)
 
     # Training
     for _ in range(MAX_ITER):
