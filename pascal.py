@@ -331,7 +331,6 @@ def inference(images):
         _activation_summary(score_fr)
 
     # upscore2
-    # TODO: check how to use tf.nn.conv2d_transpose.output_shape
     with tf.variable_scope('upscore2') as scope:
         kernel = _variable_with_weight_decay('weights',
                                                 shape=[4, 4, 21, 21],
