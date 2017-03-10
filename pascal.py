@@ -213,7 +213,7 @@ def inference(images):
                                                 stddev=5e-2,
                                                 wd=1*WEIGHT_DECAY)
         conv = tf.nn.conv2d(pool5, kernel, [1, 1, 1, 1], padding='VALID')
-        bias = _bias_with_weight_decay( 'biases',
+        biases = _bias_with_weight_decay( 'biases',
                                         shape=[4096],
                                         val=0.0,
                                         wd=0*WEIGHT_DECAY)
@@ -231,7 +231,7 @@ def inference(images):
                                                 stddev=5e-2,
                                                 wd=1*WEIGHT_DECAY)
         conv = tf.nn.conv2d(drop6, kernel, [1, 1, 1, 1], padding='VALID')
-        bias = _bias_with_weight_decay( 'biases',
+        biases = _bias_with_weight_decay( 'biases',
                                         shape=[4096],
                                         val=0.0,
                                         wd=0*WEIGHT_DECAY)
@@ -249,7 +249,7 @@ def inference(images):
                                                 stddev=5e-2,
                                                 wd=1*WEIGHT_DECAY)
         conv = tf.nn.conv2d(drop7, kernel, [1, 1, 1, 1], padding='VALID')
-        bias = _bias_with_weight_decay( 'biases',
+        biases = _bias_with_weight_decay( 'biases',
                                         shape=[21],
                                         val=0.0,
                                         wd=0*WEIGHT_DECAY)
@@ -273,7 +273,7 @@ def inference(images):
                                                 stddev=5e-2,
                                                 wd=1*WEIGHT_DECAY)
         conv = tf.nn.conv2d(pool4, kernel, [1, 1, 1, 1], padding='VALID')
-        bias = _bias_with_weight_decay( 'biases',
+        biases = _bias_with_weight_decay( 'biases',
                                         shape=[21],
                                         val=0.0,
                                         wd=0*WEIGHT_DECAY)
@@ -281,7 +281,9 @@ def inference(images):
         _activation_summary(score_pool4)
 
     # score_pool4c
-    score_pool4c = tf.image.pad_to_bounding_box(score_pool4, 5, 5, 4, 4)
+    score_pool4_ = tf.reshape(score_pool4, tf.shape(score_pool4)[1:4])
+    score_pool4c_ = tf.image.pad_to_bounding_box(score_pool4_, 5, 5, 4, 4)
+    score_pool4c = tf.reshape(score_pool4c_, [1] + tf.shape(score_pool4)[1:4])
 
     # fuse_pool4
     fuse_pool4 = tf.add(score_pool4c, upscore2)
@@ -296,18 +298,20 @@ def inference(images):
         _activation_summary(upscore16)
 
     # score
-    score = tf.image.pad_to_bounding_box(upscore18, 27, 27, images.shpae.dims[1], images.shpae.dims[2])
+    upscore16_ = tf.reshape(upscore16, tf.shape(upscore16)[1:4])
+    score_ = tf.image.pad_to_bounding_box(upscore16_, 27, 27, tf.shape(images)[1], tf.shape(images)[2])
+    score = tf.reshape(score_, [1] + tf.shape(score_))
 
     # linear layer(WX + b),
     # We don't apply softmax here because
     # tf.nn.sparse_softmax_cross_entropy_with_logits accepts the unscaled logits
     # and performs the softmax internally for efficiency.
     with tf.variable_scope('softmax_linear') as scope:
-        weights = _variable_with_weight_decay('weights', [192, NUM_CLASSES],
+        weights = _variable_with_weight_decay('weights', [tf.shape(images)[1], tf.shape(images)[2], 1, NUM_CLASSES],
                                                 stddev=1/192.0, wd=0.0)
         biases = _variable_on_cpu('biases', [NUM_CLASSES],
                                     tf.constant_initializer(0.0))
-        softmax_linear = tf.add(tf.matmul(local4, weights), biases, name=scope.name)
+        softmax_linear = tf.add(tf.matmul(score, weights), biases, name=scope.name)
         _activation_summary(softmax_linear)
 
     return softmax_linear
