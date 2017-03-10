@@ -300,7 +300,7 @@ def inference(images):
                                                 shape=[32, 32, 21, 21],
                                                 stddev=5e-2,
                                                 wd=False)
-        upscore16 = tf.nn.conv2d_transpose(fuse_pool4, kernel, [21, 80, 80, 21], [1, 16, 16, 1], padding='VALID')
+        upscore16 = tf.nn.conv2d_transpose(fuse_pool4, kernel, [1, 80, 80, 21], [1, 16, 16, 1], padding='VALID')
         _activation_summary(upscore16)
 
     # score
@@ -321,11 +321,11 @@ def inference(images):
     # print( type(images.get_shape().as_list()))
     # print( type(images.get_shape().dims))
     with tf.variable_scope('softmax_linear') as scope:
-        weights = _variable_with_weight_decay('weights', [HEIGHT, WIDTH, 1, NUM_CLASSES],
+        weights = _variable_with_weight_decay('weights', [1] + score.get_shape().as_list()[1:3]+[NUM_CLASSES],
                                                 stddev=1/192.0, wd=0.0)
         biases = _variable_on_cpu('biases', [NUM_CLASSES],
                                     tf.constant_initializer(0.0))
-        softmax_linear = tf.add(tf.matmul(score, weights), biases, name=scope.name)
+        softmax_linear = tf.add(tf.multiply(score, weights), biases, name=scope.name)
         _activation_summary(softmax_linear)
 
     return softmax_linear
