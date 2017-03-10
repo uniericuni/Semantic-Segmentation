@@ -23,6 +23,7 @@ class PascalReader:
         label = misc.imread(labelName)
         HEIGHT = image.shape[0]
         WIDTH = image.shape[1]
+        print HEIGHT,WIDTH
         tmpImage = np.zeros((1, 2*self.padding_length+image.shape[0], 2*self.padding_length+image.shape[1], image.shape[2]))
         tmpImage[0,self.padding_length:self.padding_length+image.shape[0],self.padding_length:self.padding_length+image.shape[1],:] = image[:,:,:]
         tmpLabel = np.zeros((1, label.shape[0], label.shape[1], label.shape[2]))
