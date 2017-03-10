@@ -189,7 +189,8 @@ def inference(images):
     # If we only ran this model on a single GPU, we could simplify this function
     # by replacing all instances of tf.get_variable() with tf.Variable().
     #
-
+    
+    print(images)
     module = module_wrap(images, 3)
 
     # 2 conv + 1 pool
@@ -300,17 +301,17 @@ def inference(images):
 
     # score
     upscore16_ = tf.reshape(upscore16, tf.shape(upscore16)[1:4])
-    score_ = tf.image.pad_to_bounding_box(upscore16_, 27, 27, tf.shape(images)[1], tf.shape(images)[2])
+    score_ = tf.image.pad_to_bounding_box(upscore16_, 27, 27, HEIGHT, WIDTH)
     score = tf.reshape(score_, [1] + tf.shape(score_))
 
     # linear layer(WX + b),
     # We don't apply softmax here because
     # tf.nn.sparse_softmax_cross_entropy_with_logits accepts the unscaled logits
     # and performs the softmax internally for efficiency.
-    print( type(images.get_shape()))
-    print( type(images.get_shape().dims))
+    # print( type(images.get_shape().as_list()))
+    # print( type(images.get_shape().dims))
     with tf.variable_scope('softmax_linear') as scope:
-        weights = _variable_with_weight_decay('weights', [tf.shape(images)[1], tf.shape(images)[2], 1, NUM_CLASSES],
+        weights = _variable_with_weight_decay('weights', [HEIGHT, WIDTH, 1, NUM_CLASSES],
                                                 stddev=1/192.0, wd=0.0)
         biases = _variable_on_cpu('biases', [NUM_CLASSES],
                                     tf.constant_initializer(0.0))
