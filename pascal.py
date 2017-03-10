@@ -283,9 +283,9 @@ def inference(images):
         _activation_summary(score_pool4)
 
     # score_pool4c
-    score_pool4_ = tf.reshape(score_pool4, tf.shape(score_pool4)[1:4])
+    score_pool4_ = tf.reshape(score_pool4, tf.shape(score_pool4)[1:])
     score_pool4c_ = tf.image.pad_to_bounding_box(score_pool4_, 5, 5, 4, 4)
-    score_pool4c = tf.reshape(score_pool4c_, [1] + tf.shape(score_pool4)[1:4])
+    score_pool4c = tf.reshape(score_pool4c_, [1] + tf.shape(score_pool4)[1:])
 
     # fuse_pool4
     fuse_pool4 = tf.add(score_pool4c, upscore2)
@@ -300,11 +300,11 @@ def inference(images):
         _activation_summary(upscore16)
 
     # score
-    upscore16_ = tf.reshape(upscore16, tf.shape(upscore16)[1:4])
+    upscore16_ = tf.reshape(upscore16, tf.shape(upscore16)[1:])
     score_ = tf.image.pad_to_bounding_box(upscore16_, 27, 27, HEIGHT, WIDTH)
-    score = tf.reshape(score_, [1] + tf.shape(score_))
+    score = tf.reshape(score_, [1] + tf.shape(score_)[1:])
 
-    return score
+    # return score
 
     # linear layer(WX + b),
     # We don't apply softmax here because
