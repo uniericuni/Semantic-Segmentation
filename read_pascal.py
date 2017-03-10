@@ -1,6 +1,7 @@
 from scipy import misc
 from config import *
 import numpy as np
+from PIL import Image
 
 class PascalReader:
     
@@ -20,13 +21,15 @@ class PascalReader:
         imageName = self.train_image_dir + self.train_names[self.current_image] + '.jpg'
         labelName = self.train_label_dir + self.train_names[self.current_image] + '.png'
         image = misc.imread(imageName)
-        label = misc.imread(labelName)
+        label = Image.open(labelName)
+        label = np.array(label, dtype=np.uint8)
         HEIGHT = image.shape[0]
         WIDTH = image.shape[1]
         tmpImage = np.zeros((1, 2*self.padding_length+image.shape[0], 2*self.padding_length+image.shape[1], image.shape[2]))
         tmpImage[0,self.padding_length:self.padding_length+image.shape[0],self.padding_length:self.padding_length+image.shape[1],:] = image[:,:,:]
-        tmpLabel = np.zeros((1, label.shape[0], label.shape[1], label.shape[2]))
-        tmpLabel[0,:,:,:] = label[:,:,:]
+        tmpLabel = np.zeros((1, label.shape[0], label.shape[1], 21))
+        for i in range(21):
+            tmpLabel[0, :, :, i] = (label == i)
 
         self.current_image += 1
 
