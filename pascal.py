@@ -175,7 +175,7 @@ def module_wrap(image, in_ch):
  
         # pool
         scope_name = 'pool'+str(SCOPE_NUM[0])
-        BUFF[0] = tf.nn.max_pool(BUFF[0], ksize=[2, 2, out_ch, out_ch], strides=[1, 2, 2, 1],
+        BUFF[0] = tf.nn.max_pool(BUFF[0], ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1],
                                     padding='SAME', name=scope_name)
         SCOPE_NUM[0] += 1
         IN_CH[0] = out_ch

@@ -16,7 +16,7 @@ NUM_CLASSES = 21
 WEIGHT_DECAY = 5e-4
 
 # maximum iteration number
-MAX_ITER = 1e+5
+MAX_ITER = 100000
 
 # learning rate
 LR = 1e-12

@@ -32,7 +32,7 @@ def main(argv):
     init = tf.global_variables_initializer()
     
     # Session Define
-    #sess = tf.InteractiveSession()
+    # sess = tf.InteractiveSession()
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
                                             log_device_placement=False))
     sess.run(init)
@@ -40,7 +40,7 @@ def main(argv):
     # Training
     for _ in range(MAX_ITER):
         batch_xs, batch_ys = pascal_reader.next_batch(BATCH_SIZE)
-        train_step.run(feed_dict={x: batch_batch_xs, y_: batch_ys})
+        sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
 
     # Testing
     # TODO: testing reader
