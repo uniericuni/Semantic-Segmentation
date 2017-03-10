@@ -147,39 +147,38 @@ def _variable_with_weight_decay(name, shape, stddev, wd):
     return var
 
 
-def module_wrap(images, in_ch):
+def module_wrap(image, in_ch):
     IN_CH = {0:in_ch}
     SCOPE_NUM = {0:1}
     OUT_CH = {0:3}
     BUFF = {0:image}
 
     def module(conv_num, out_ch):
-
         # conv
         for i in range(0,conv_num):  
-            scope_name = 'conv'+str(SCOPE_NUM{0})+str(i)
+            scope_name = 'conv'+str(SCOPE_NUM[0])+str(i)
             with tf.variable_scope(scope_name) as scope:
                 kernel = _variable_with_weight_decay('weights',
-                                                        shape=[3, 3, IN_CH{0}, out_ch],
+                                                        shape=[3, 3, IN_CH[0], out_ch],
                                                         stddev=5e-2,
                                                         wd=1*WEIGHT_DECAY)
-                IN_CH{0} = out_ch
-                conv = tf.nn.conv2d(BUFF{0}, kernel, [1, 1, 1, 1], padding='SAME')
+                IN_CH[0] = out_ch
+                conv = tf.nn.conv2d(BUFF[0], kernel, [1, 1, 1, 1], padding='SAME')
                 bias = _bias_with_weight_decay( 'biases',
                                                 shape=[out_ch],
                                                 val=0.0,
                                                 wd=0*WEIGHT_DECAY)
-                pre_activation = tf.nn.bias_add(conv, biases)
-                BUFF{0} = tf.nn.relu(pre_activation, name=scope.name)
-                _activation_summary(conv_biased)
+                pre_activation = tf.nn.bias_add(conv, bias)
+                BUFF[0] = tf.nn.relu(pre_activation, name=scope.name)
+                _activation_summary(BUFF[0])
  
         # pool
-        scope_name = 'pool'+str(SCOPE_NUM{0})
-        BUFF{0} = tf.nn.max_pool(BUFF{0}, ksize=[2, 2, out_ch, out_ch], strides=[1, 2, 2, 1],
+        scope_name = 'pool'+str(SCOPE_NUM[0])
+        BUFF[0] = tf.nn.max_pool(BUFF[0], ksize=[2, 2, out_ch, out_ch], strides=[1, 2, 2, 1],
                                     padding='SAME', name=scope_name)
-        SCOPE_NUM += 1
-        IN_CH{0} = out_ch
-        return BUFF{0}
+        SCOPE_NUM[0] += 1
+        IN_CH[0] = out_ch
+        return BUFF[0]
 
     return module
 
@@ -190,7 +189,7 @@ def inference(images):
     # by replacing all instances of tf.get_variable() with tf.Variable().
     #
 
-    module = modele_wrap(images, 3)
+    module = module_wrap(images, 3)
 
     # 2 conv + 1 pool
     pool1 = module(2, 64)
