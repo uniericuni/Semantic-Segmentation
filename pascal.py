@@ -302,6 +302,8 @@ def inference(images):
     score_ = tf.image.pad_to_bounding_box(upscore16_, 27, 27, tf.shape(images)[1], tf.shape(images)[2])
     score = tf.reshape(score_, [1] + tf.shape(score_))
 
+    return score
+
     # linear layer(WX + b),
     # We don't apply softmax here because
     # tf.nn.sparse_softmax_cross_entropy_with_logits accepts the unscaled logits
