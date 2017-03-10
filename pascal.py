@@ -91,6 +91,7 @@ def _variable_on_cpu(name, shape, initializer):
     """
     with tf.device('/cpu:0'):
         dtype = tf.float16 if FLAGS.use_fp16 else tf.float32
+        # print(shape)
         var = tf.get_variable(name, shape, initializer=initializer, dtype=dtype)
     return var
 
@@ -306,6 +307,8 @@ def inference(images):
     # We don't apply softmax here because
     # tf.nn.sparse_softmax_cross_entropy_with_logits accepts the unscaled logits
     # and performs the softmax internally for efficiency.
+    print( type(images.get_shape()))
+    print( type(images.get_shape().dims))
     with tf.variable_scope('softmax_linear') as scope:
         weights = _variable_with_weight_decay('weights', [tf.shape(images)[1], tf.shape(images)[2], 1, NUM_CLASSES],
                                                 stddev=1/192.0, wd=0.0)
