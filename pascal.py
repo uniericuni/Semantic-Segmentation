@@ -190,7 +190,7 @@ def computeShape(shape, bottom, stride):
         w = ((in_shape[2]-1) * stride) + 1
         new_shape = [in_shape[0], h, w, NUM_CLASSES]
     else:
-        kernel_size = -12
+        kernel_size = 0
         new_shape = [shape[0], shape[1]+kernel_size, shape[2]+kernel_size, NUM_CLASSES]
 
     return tf.stack(new_shape) 
@@ -273,15 +273,14 @@ def inference(images, labels):
     # upscore2
     with tf.variable_scope('upscore2') as scope:
         kernel = _variable_with_weight_decay('weights',
-                                                shape=[4, 4, NUM_CLASSES, NUM_CLASSES],
+                                                shape=[13, 13, NUM_CLASSES, NUM_CLASSES],
                                                 stddev=5e-2,
                                                 wd=False)
         output_shape = computeShape(tf.shape(pool4), score_fr, 2)
-        upscore2 = tf.nn.conv2d_transpose(score_fr, kernel, output_shape, [1, 2, 2, 1], padding='SAME')
+        upscore2 = tf.nn.conv2d_transpose(score_fr, kernel, output_shape, [1, 2, 2, 1], padding='VALID')
         _activation_summary(upscore2)
         
         print("upscore2",upscore2.get_shape())
-        return tf.Print(score_fr, [tf.shape(score_fr), output_shape, tf.shape(upscore2)], '======> ')
 
     # score_pool4
     with tf.variable_scope('score_pool4') as scope:
@@ -315,11 +314,10 @@ def inference(images, labels):
                                                 shape=[32, 32, NUM_CLASSES, NUM_CLASSES],
                                                 stddev=5e-2,
                                                 wd=False)
-        output_shape = computeShape(tf.shape(labels), fuse_pool4, 16)
+        output_shape = computeShape(tf.shape(images), fuse_pool4, 16)
         upscore16 = tf.nn.conv2d_transpose(fuse_pool4, kernel, output_shape, [1, 16, 16, 1], padding='SAME')
         _activation_summary(upscore16)
     print("upscore16",upscore16.get_shape())
-    return tf.Print(upscore16, [tf.shape(upscore16), tf.shape(fuse_pool4)], '======> ')
 
     '''
     # upscore16

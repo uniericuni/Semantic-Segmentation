@@ -21,6 +21,7 @@ MAX_ITER = 100000
 # learning rate
 LR = 1e-12
 
-INIT_PADDING = 100
+# padding
+INIT_PADDING = 0
 HEIGHT = 0
 WIDTH = 0
