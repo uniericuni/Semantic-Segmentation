@@ -183,25 +183,14 @@ def module_wrap(image, in_ch):
 
     return module
 
-def computeShape(shape, bottom, stride):
-    if shape is None:
-        in_shape = tf.shape(bottom)
-        h = ((in_shape[1]-1) * stride) + 1
-        w = ((in_shape[2]-1) * stride) + 1
-        new_shape = [in_shape[0], h, w, NUM_CLASSES]
-    else:
-        kernel_size = -12
-        new_shape = [shape[0], shape[1]+kernel_size, shape[2]+kernel_size, NUM_CLASSES]
-
-    return tf.stack(new_shape) 
-
-def inference(images, labels):
+def inference(images):
     # We instantiate all variables using tf.get_variable() instead of
     # tf.Variable() in order to share variables across multiple GPU training runs.
     # If we only ran this model on a single GPU, we could simplify this function
     # by replacing all instances of tf.get_variable() with tf.Variable().
     #
     
+    print(images)
     module = module_wrap(images, 3)
 
     # 2 conv + 1 pool
@@ -269,19 +258,17 @@ def inference(images, labels):
         pre_activation = tf.nn.bias_add(conv, biases)
         score_fr = tf.nn.relu(pre_activation, name=scope.name)
         _activation_summary(score_fr)
+    print("score_fr",score_fr.get_shape())
 
     # upscore2
     with tf.variable_scope('upscore2') as scope:
         kernel = _variable_with_weight_decay('weights',
-                                                shape=[4, 4, NUM_CLASSES, NUM_CLASSES],
+                                                shape=[4, 4, 21, 21],
                                                 stddev=5e-2,
                                                 wd=False)
-        output_shape = computeShape(tf.shape(pool4), score_fr, 2)
-        upscore2 = tf.nn.conv2d_transpose(score_fr, kernel, output_shape, [1, 2, 2, 1], padding='SAME')
+        upscore2 = tf.nn.conv2d_transpose(score_fr, kernel, [1, 4, 4, 21], [1, 2, 2, 1], padding='VALID')
         _activation_summary(upscore2)
-        
-        print("upscore2",upscore2.get_shape())
-        return tf.Print(score_fr, [tf.shape(score_fr), output_shape, tf.shape(upscore2)], '======> ')
+    print("upscore2",upscore2.get_shape())
 
     # score_pool4
     with tf.variable_scope('score_pool4') as scope:
@@ -298,9 +285,9 @@ def inference(images, labels):
         _activation_summary(score_pool4)
 
     # score_pool4c
-    score_pool4c = score_pool4
-    '''
     score_pool4c = tf.image.extract_glimpse(score_pool4, upscore2.get_shape()[1:3], [[0,0]])
+    '''
+    score_pool4c = score_pool4
     score_pool4_ = tf.reshape(score_pool4, score_pool4.get_shape()[1:])
     score_pool4c_ = tf.image.pad_to_bounding_box(score_pool4_, 5, 5, 4, 4)
     score_pool4c = tf.reshape(score_pool4c_, [1] + score_pool4.get_shape()[1:])
@@ -312,26 +299,11 @@ def inference(images, labels):
     # upscore16
     with tf.variable_scope('upscore16') as scope:
         kernel = _variable_with_weight_decay('weights',
-                                                shape=[32, 32, NUM_CLASSES, NUM_CLASSES],
-                                                stddev=5e-2,
-                                                wd=False)
-        output_shape = computeShape(tf.shape(labels), fuse_pool4, 16)
-        upscore16 = tf.nn.conv2d_transpose(fuse_pool4, kernel, output_shape, [1, 16, 16, 1], padding='SAME')
-        _activation_summary(upscore16)
-    print("upscore16",upscore16.get_shape())
-    return tf.Print(upscore16, [tf.shape(upscore16), tf.shape(fuse_pool4)], '======> ')
-
-    '''
-    # upscore16
-    with tf.variable_scope('upscore16') as scope:
-        kernel = _variable_with_weight_decay('weights',
                                                 shape=[32, 32, 21, 21],
                                                 stddev=5e-2,
                                                 wd=False)
-        output_shape = computeShape(score_fr)
         upscore16 = tf.nn.conv2d_transpose(fuse_pool4, kernel, [1, 80, 80, 21], [1, 16, 16, 1], padding='VALID')
         _activation_summary(upscore16)
-    '''
 
     # score
     score = upscore16
@@ -341,9 +313,9 @@ def inference(images, labels):
     score_ = tf.image.pad_to_bounding_box(upscore16_, 27, 27, HEIGHT, WIDTH)
     score = tf.reshape(score_, [1] + tf.shape(upscore16)[1:])
     '''
+    print(score.get_shape())
     return score
-    
-    '''
+
     # return score
 
     # linear layer(WX + b),
@@ -361,4 +333,3 @@ def inference(images, labels):
         _activation_summary(softmax_linear)
 
     return softmax_linear
-    '''

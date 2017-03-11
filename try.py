@@ -21,10 +21,10 @@ def main(argv):
 
     # Create the model
     x = tf.placeholder(tf.float32) #shape=[batch size, dimemsionality] 
-    y = pascal.inference(x)
+    y_ = tf.placeholder(tf.float32)
+    y = pascal.inference(x, y_)
 
     # Define loss and optimizer
-    y_ = tf.placeholder(tf.float32)
     cross_entropy = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
     train_step = tf.train.GradientDescentOptimizer(LR).minimize(cross_entropy)
