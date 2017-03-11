@@ -39,24 +39,32 @@ def main(argv):
     saver = tf.train.Saver()
 
     # Training
+    print('='*40)
+    print('Training ...')
     loss = []
-    for _ in range(MAX_ITER):
+    for i in range(MAX_ITER):
         batch_xs, batch_ys = pascal_reader.next_batch(BATCH_SIZE)
         cross_entropy = -tf.reduce_sum(y_ * tf.log(y))
         _, loss_val = sess.run([train_step,cross_entropy], feed_dict={x: batch_xs, y_: batch_ys})
-        save_path = saver.save(sess, "./models/model%s/"%MODEL_INDEX)
-        print("Model saved in file: %s" % save_path + ' | loss: %s'%str(loss_val))
+        save_path = saver.save(sess, "./models/model%s.ckpt"%MODEL_INDEX)
         loss.append(loss_val)
-    np.save('./models/model%s/loss'%MODEL_INDEX, np.array(loss))
+        print('Iteration: %s'%str(i) + ' | Model saved in file: %s'%save_path + ' | loss: %s'%str(loss_val))
+    np.save('./models/trCrossEntropyLoss%s'%MODEL_INDEX, np.array(loss))
     
-
     # Testing
+    print('='*40)
+    print('Tresting ...')
+    loss = []
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     for _ in range(MAX_ITER):
         batch_xs, batch_ys = pascal_reader.next_test()
-        print(sess.run(accuracy, feed_dict={x: batch_xs,
-                                            y_: batch_ys} ))
+        loss_val = (sess.run(accuracy, feed_dict={x: batch_xs,
+                                       y_: batch_ys} ))
+        loss.append(loss_val)
+        print('Iteration: %s'%str(i) + ' | accuracy: %s'%str(loss_val))
+    np.save('./models/tstAccuracy%s'%MODEL_INDEX, np.array(loss))
+    print('='*40)
 
 if __name__=='__main__':
     '''
@@ -66,6 +74,6 @@ if __name__=='__main__':
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main, argv=[sys.argv[0]]+unparsed)
     '''
-    if not os.path.exists('models/model%s'%MODEL_INDEX):
-        os.makedirs('models/model%s'%MODEL_INDEX)
+    if not os.path.exists('models'):
+        os.makedirs('models')
     tf.app.run(main=main, argv=[sys.argv[0]])
