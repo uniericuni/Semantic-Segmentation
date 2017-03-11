@@ -5,10 +5,11 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
-import sys
+import sys, os
 import tensorflow as tf
 import read_pascal
 import pascal
+import numpy as np
 
 from config import *
 
@@ -32,24 +33,30 @@ def main(argv):
     init = tf.global_variables_initializer()
     
     # Session Define
-    # sess = tf.InteractiveSession()
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
                                             log_device_placement=False))
     sess.run(init)
+    saver = tf.train.Saver()
 
     # Training
+    loss = []
     for _ in range(MAX_ITER):
         batch_xs, batch_ys = pascal_reader.next_batch(BATCH_SIZE)
-        sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
+        cross_entropy = -tf.reduce_sum(y_ * tf.log(y))
+        _, loss_val = sess.run([train_step,cross_entropy], feed_dict={x: batch_xs, y_: batch_ys})
+        save_path = saver.save(sess, "./models/model%s/"%MODEL_INDEX)
+        print("Model saved in file: %s" % save_path + ' | loss: %s'%str(loss_val))
+        loss.append(loss_val)
+    np.save('./models/model%s/loss'%MODEL_INDEX, np.array(loss))
+    
 
     # Testing
-    # TODO: testing reader
-    '''
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    print(sess.run(accuracy, feed_dict={x: pascal.test.images,
-                                        y_: mnist.test.labels})
-    '''
+    for _ in range(MAX_ITER):
+        batch_xs, batch_ys = pascal_reader.next_test()
+        print(sess.run(accuracy, feed_dict={x: batch_xs,
+                                            y_: batch_ys} ))
 
 if __name__=='__main__':
     '''
@@ -59,4 +66,6 @@ if __name__=='__main__':
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main, argv=[sys.argv[0]]+unparsed)
     '''
+    if not os.path.exists('models/model%s'%MODEL_INDEX):
+        os.makedirs('models/model%s'%MODEL_INDEX)
     tf.app.run(main=main, argv=[sys.argv[0]])

@@ -1,10 +1,5 @@
-'''
-# input height/width
-IMAGE_SIZE = 424
-
-# input dimension
-DIM = IMAGE_SIZE*IMAGE_SIZE
-'''
+# model index
+MODEL_INDEX = 1
 
 # patchwise batch size
 BATCH_SIZE = 1

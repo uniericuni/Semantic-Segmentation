@@ -279,8 +279,6 @@ def inference(images, labels):
         output_shape = computeShape(tf.shape(pool4), score_fr, 2)
         upscore2 = tf.nn.conv2d_transpose(score_fr, kernel, output_shape, [1, 2, 2, 1], padding='VALID')
         _activation_summary(upscore2)
-        
-        print("upscore2",upscore2.get_shape())
 
     # score_pool4
     with tf.variable_scope('score_pool4') as scope:
@@ -298,12 +296,6 @@ def inference(images, labels):
 
     # score_pool4c
     score_pool4c = score_pool4
-    '''
-    score_pool4c = tf.image.extract_glimpse(score_pool4, upscore2.get_shape()[1:3], [[0,0]])
-    score_pool4_ = tf.reshape(score_pool4, score_pool4.get_shape()[1:])
-    score_pool4c_ = tf.image.pad_to_bounding_box(score_pool4_, 5, 5, 4, 4)
-    score_pool4c = tf.reshape(score_pool4c_, [1] + score_pool4.get_shape()[1:])
-    '''
 
     # fuse_pool4
     fuse_pool4 = tf.add(score_pool4c, upscore2)
@@ -317,46 +309,8 @@ def inference(images, labels):
         output_shape = computeShape(tf.shape(images), fuse_pool4, 16)
         upscore16 = tf.nn.conv2d_transpose(fuse_pool4, kernel, output_shape, [1, 16, 16, 1], padding='SAME')
         _activation_summary(upscore16)
-    print("upscore16",upscore16.get_shape())
-
-    '''
-    # upscore16
-    with tf.variable_scope('upscore16') as scope:
-        kernel = _variable_with_weight_decay('weights',
-                                                shape=[32, 32, 21, 21],
-                                                stddev=5e-2,
-                                                wd=False)
-        output_shape = computeShape(score_fr)
-        upscore16 = tf.nn.conv2d_transpose(fuse_pool4, kernel, [1, 80, 80, 21], [1, 16, 16, 1], padding='VALID')
-        _activation_summary(upscore16)
-    '''
 
     # score
     score = upscore16
-    '''
-    score = tf.image.extract_glimpse(upscore16, images.get_shape()[1:3], [[0,0]])
-    upscore16_ = tf.reshape(upscore16, score_pool4.get_shape()[1:])
-    score_ = tf.image.pad_to_bounding_box(upscore16_, 27, 27, HEIGHT, WIDTH)
-    score = tf.reshape(score_, [1] + tf.shape(upscore16)[1:])
-    '''
+
     return score
-    
-    '''
-    # return score
-
-    # linear layer(WX + b),
-    # We don't apply softmax here because
-    # tf.nn.sparse_softmax_cross_entropy_with_logits accepts the unscaled logits
-    # and performs the softmax internally for efficiency.
-    # print( type(images.get_shape().as_list()))
-    # print( type(images.get_shape().dims))
-    with tf.variable_scope('softmax_linear') as scope:
-        weights = _variable_with_weight_decay('weights', [1] + score.get_shape().as_list()[1:3]+[NUM_CLASSES],
-                                                stddev=1/192.0, wd=0.0)
-        biases = _variable_on_cpu('biases', [NUM_CLASSES],
-                                    tf.constant_initializer(0.0))
-        softmax_linear = tf.add(tf.multiply(score, weights), biases, name=scope.name)
-        _activation_summary(softmax_linear)
-
-    return softmax_linear
-    '''
