@@ -35,9 +35,10 @@ class PascalReader:
         tmpLabel = np.zeros((1, label.shape[0], label.shape[1], 21))
         for i in range(21):
             tmpLabel[0, :, :, i] = (label == i)
-
+        '''
         for i in range(21):
             print(np.sum(tmpLabel[0,:,:,i] == 1))
+        '''
 
         self.current_train_image += 1
 
