@@ -68,10 +68,11 @@ def main(argv):
     print('='*40)
     print('Tresting ...')
     loss = []
-    correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+    correct_prediction = tf.equal(tf.argmax(y, 3), tf.argmax(y_, 3))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     for i in range(MAX_ITER):
         batch_xs, batch_ys = pascal_reader.next_test()
+        print(batch_xs.get_shape())
         loss_val = (sess.run(accuracy, feed_dict={x: batch_xs,
                                        y_: batch_ys} ))
         loss.append(loss_val)
