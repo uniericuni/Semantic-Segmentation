@@ -17,9 +17,14 @@ FLAG = None
 
 def main(argv):
 
-    # read checkpoint index
-    f = argv[0]
-    file_index = argv[1]
+    # read current file index
+    file_index = 0
+    if os.path.exists('./file_index'):
+        f = open('./file_index')
+        for line in f:
+            file_index = int(line)
+        f.close()
+    f = open('./file_index', 'w+')
     
     # import data
     pascal_reader = read_pascal.PascalReader(file_index)
@@ -42,9 +47,8 @@ def main(argv):
     sess.run(init)
     saver = tf.train.Saver()
     if file_index != 0:
-        with tf.Session() as sess:
-            saver.restore(sess, "/models/model%s.ckpt"%MODEL_INDEX)
-            print("Model restored ...")
+        saver.restore(sess, "./models/model%s.ckpt"%MODEL_INDEX)
+        print("Model restored ...")
 
     # Training
     print('='*40)
@@ -66,12 +70,12 @@ def main(argv):
     loss = []
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-    for _ in range(MAX_ITER):
+    for i in range(MAX_ITER):
         batch_xs, batch_ys = pascal_reader.next_test()
         loss_val = (sess.run(accuracy, feed_dict={x: batch_xs,
                                        y_: batch_ys} ))
         loss.append(loss_val)
-        print('Iteration: %s'%str(i) + ' | accuracy: %s'%str(loss_val))
+        print('Iteration: %s'%str(i) + ' | Error rate: %s'%str(loss_val))
     np.save('./models/tstAccuracy%s'%MODEL_INDEX, np.array(loss))
     print('='*40)
 
@@ -83,19 +87,10 @@ if __name__=='__main__':
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main, argv=[sys.argv[0]]+unparsed)
     '''
-    # read current file index
-    if not os.path.exists('./file_index'):
-        file_index = 0
-    else:
-        f = open('./file_index')
-        for line in f:
-            file_index = int(line)
-        f.close()
-    f = open('./file_index', 'w+')
 
     # init model directory
     if not os.path.exists('./models'):
         os.makedirs('models')
 
     # run the main program
-    tf.app.run(main=main, argv=[f,file_index])
+    tf.app.run(main=main, argv=[])
