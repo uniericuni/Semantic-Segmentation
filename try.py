@@ -10,6 +10,7 @@ import tensorflow as tf
 import read_pascal
 import pascal
 import numpy as np
+import scipy.misc
 
 from config import *
 
@@ -60,7 +61,7 @@ def main(argv):
         _, loss_val = sess.run([train_step,cross_entropy], feed_dict={x: batch_xs, y_: batch_ys})
         save_path = saver.save(sess, "./models/model%s.ckpt"%MODEL_INDEX)
         loss.append(loss_val)
-        f.write(str(file_index+i+1))
+        f.write(str(file_index+i+1)+'\n')
         print('Iteration: %s'%str(i) + ' | Filename: %s'%filename + ' | Model saved in file: %s'%save_path)
     np.save('./models/trCrossEntropyLoss%s'%MODEL_INDEX, np.array(loss))
     
@@ -71,12 +72,13 @@ def main(argv):
     correct_prediction = tf.equal(tf.argmax(y, 3), tf.argmax(y_, 3))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     for i in range(MAX_ITER):
-        batch_xs, batch_ys = pascal_reader.next_test()
-        print(batch_xs.get_shape())
-        loss_val = (sess.run(accuracy, feed_dict={x: batch_xs,
-                                       y_: batch_ys} ))
+        batch_xs, batch_ys, filename = pascal_reader.next_test()
+        err, pred, pred2 = (sess.run([ correct_prediction, tf.argmax(y_,3), tf.argmax(y,3)], feed_dict={x: batch_xs,
+                                            y_: batch_ys} ))
+        h,w = np.shape(err[0])
+        loss_val = len(np.where(err[0]==False)[0])/(h*w)
         loss.append(loss_val)
-        print('Iteration: %s'%str(i) + ' | Error rate: %s'%str(loss_val))
+        print('Iteration: %s'%str(i) + ' | Filename: %s'%filename + ' | Error rate: %s'%str(loss_val))
     np.save('./models/tstAccuracy%s'%MODEL_INDEX, np.array(loss))
     print('='*40)
 
