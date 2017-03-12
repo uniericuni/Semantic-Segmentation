@@ -17,8 +17,12 @@ FLAG = None
 
 def main(argv):
 
+    # read checkpoint index
+    f = argv[0]
+    file_index = argv[1]
+    
     # import data
-    pascal_reader = read_pascal.PascalReader()
+    pascal_reader = read_pascal.PascalReader(file_index)
 
     # Create the model
     x = tf.placeholder(tf.float32) #shape=[batch size, dimemsionality] 
@@ -34,21 +38,26 @@ def main(argv):
     
     # Session Define
     sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True,
-                                            log_device_placement=False))
+                                                log_device_placement=False))
     sess.run(init)
     saver = tf.train.Saver()
+    if file_index != 0:
+        with tf.Session() as sess:
+            saver.restore(sess, "/models/model%s.ckpt"%MODEL_INDEX)
+            print("Model restored ...")
 
     # Training
     print('='*40)
     print('Training ...')
     loss = []
     for i in range(MAX_ITER):
-        batch_xs, batch_ys = pascal_reader.next_batch(BATCH_SIZE)
+        batch_xs, batch_ys, filename = pascal_reader.next_batch(BATCH_SIZE)
         cross_entropy = -tf.reduce_sum(y_ * tf.log(y))
         _, loss_val = sess.run([train_step,cross_entropy], feed_dict={x: batch_xs, y_: batch_ys})
         save_path = saver.save(sess, "./models/model%s.ckpt"%MODEL_INDEX)
         loss.append(loss_val)
-        print('Iteration: %s'%str(i) + ' | Model saved in file: %s'%save_path + ' | loss: %s'%str(loss_val))
+        f.write(str(file_index+i+1))
+        print('Iteration: %s'%str(i) + ' | Filename: %s'%filename + ' | Model saved in file: %s'%save_path)
     np.save('./models/trCrossEntropyLoss%s'%MODEL_INDEX, np.array(loss))
     
     # Testing
@@ -74,6 +83,19 @@ if __name__=='__main__':
     FLAGS, unparsed = parser.parse_known_args()
     tf.app.run(main=main, argv=[sys.argv[0]]+unparsed)
     '''
-    if not os.path.exists('models'):
+    # read current file index
+    if not os.path.exists('./file_index'):
+        file_index = 0
+    else:
+        f = open('./file_index')
+        for line in f:
+            file_index = int(line)
+        f.close()
+    f = open('./file_index', 'w+')
+
+    # init model directory
+    if not os.path.exists('./models'):
         os.makedirs('models')
-    tf.app.run(main=main, argv=[sys.argv[0]])
+
+    # run the main program
+    tf.app.run(main=main, argv=[f,file_index])
