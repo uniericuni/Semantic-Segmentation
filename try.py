@@ -27,6 +27,7 @@ def main(argv):
     f = open('./file_index', 'w+')
     
     # import data
+    print(file_index)
     pascal_reader = read_pascal.PascalReader(file_index)
 
     # Create the model
