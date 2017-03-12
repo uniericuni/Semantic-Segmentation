@@ -36,6 +36,9 @@ class PascalReader:
         for i in range(21):
             tmpLabel[0, :, :, i] = (label == i)
 
+        for i in range(21):
+            print(np.sum(tmpLabel[0,:,:,i] == 1))
+
         self.current_train_image += 1
 
         return tmpImage.tolist(), tmpLabel.tolist(), self.train_names[self.current_train_image-1]
@@ -49,8 +52,8 @@ class PascalReader:
 
 
     def next_test(self):
-        imageName = self.image_dir + self.test_names[self.current_itest_`mage] + '.jpg'
-        labelName = self.label_dir + self.test_names[self.current_itest_mage] + '.png'
+        imageName = self.image_dir + self.test_names[self.current_test_image] + '.jpg'
+        labelName = self.label_dir + self.test_names[self.current_test_image] + '.png'
         image = misc.imread(imageName)
         label = Image.open(labelName)
         label = np.array(label, dtype=np.uint8)

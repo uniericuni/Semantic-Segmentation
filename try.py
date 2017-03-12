@@ -71,11 +71,11 @@ def main(argv):
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     for i in range(MAX_ITER):
-        batch_xs, batch_ys = pascal_reader.next_test()
+        batch_xs, batch_ys, filename = pascal_reader.next_test()
         loss_val = (sess.run(accuracy, feed_dict={x: batch_xs,
                                        y_: batch_ys} ))
         loss.append(loss_val)
-        print('Iteration: %s'%str(i) + ' | Error rate: %s'%str(loss_val))
+        print('Iteration: %s'%str(i) + ' | Filename: %s'%filename + ' | Error rate: %s'%str(loss_val))
     np.save('./models/tstAccuracy%s'%MODEL_INDEX, np.array(loss))
     print('='*40)
 
