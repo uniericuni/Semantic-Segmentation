@@ -5,7 +5,7 @@ from PIL import Image
 
 class PascalReader:
     
-    def __init__(self):
+    def __init__(self, current_image=0):
         self.trainlist_filename = './VOC2011/ImageSets/Segmentation/train.txt'
         self.testlist_filename = './VOC2011/ImageSets/Segmentation/test.txt'
         self.train_image_dir = './VOC2011/JPEGImages/'
@@ -13,7 +13,7 @@ class PascalReader:
         train_list = open(self.trainlist_filename)
         self.train_names = train_list.readlines()
         self.train_names = [x.strip() for x in self.train_names]
-        self.current_image = 0;
+        self.current_image = current_image;
         self.patch_length = 224;
         self.padding_length = INIT_PADDING
 
@@ -34,7 +34,7 @@ class PascalReader:
 
         self.current_image += 1
 
-        return tmpImage.tolist(), tmpLabel.tolist()
+        return tmpImage.tolist(), tmpLabel.tolist(), self.train_names[self.current_image-1]
 
         # for x in np.linspace(0, image.shape[0]-self.padding_length-1 , 4, dtype = np.int16):
         #     for y in np.linspace(0, image.shape[1]-self.padding_length-1 , 5, dtype = np.int16):
