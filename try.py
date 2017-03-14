@@ -58,7 +58,7 @@ def main(argv):
     loss = []
     for i in range(MAX_ITER):
         batch_xs, batch_ys, filename = pascal_reader.next_batch(BATCH_SIZE)
-        cross_entropy = -tf.reduce_sum(y_ * tf.log(y))
+        #cross_entropy = -tf.reduce_sum(y_ * tf.log(y))
         _, loss_val = sess.run([train_step,cross_entropy], feed_dict={x: batch_xs, y_: batch_ys})
         save_path = saver.save(sess, "./models/model%s.ckpt"%MODEL_INDEX)
         loss.append(loss_val)
@@ -78,8 +78,8 @@ def main(argv):
                                             y_: batch_ys} ))
         h,w = np.shape(err[0])
         loss_val = len(np.where(err[0]==False)[0])/(h*w)
-        scipy.misc.imsave('tmp.png', pred[0,:,:] /21 )
-        scipy.misc.imsave('tmp2.png', pred2[0,:,:] / 21 )
+        scipy.misc.imsave('./test%s/%s.png'%(MODEL_INDEX,filename), pred[0,:,:] /21 )
+        scipy.misc.imsave('./test%s/%s_2.png'%(MODEL_INDEX,filename), pred2[0,:,:] / 21 )
         loss.append(loss_val)
         print('Iteration: %s'%str(i) + ' | Filename: %s'%filename + ' | Error rate: %s'%str(loss_val))
     np.save('./models/tstAccuracy%s'%MODEL_INDEX, np.array(loss))
@@ -97,6 +97,7 @@ if __name__=='__main__':
     # init model directory
     if not os.path.exists('./models'):
         os.makedirs('models')
-
+    if not os.path.exists('./test%s'%MODEL_INDEX):
+        os.makedirs('test%s'%MODEL_INDEX)
     # run the main program
     tf.app.run(main=main, argv=[])
