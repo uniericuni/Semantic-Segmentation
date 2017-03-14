@@ -32,9 +32,12 @@ class PascalReader:
         # print 'image size: ',HEIGHT,WIDTH
         tmpImage = np.zeros((1, 2*self.padding_length+image.shape[0], 2*self.padding_length+image.shape[1], image.shape[2]))
         tmpImage[0,self.padding_length:self.padding_length+image.shape[0],self.padding_length:self.padding_length+image.shape[1],:] = image[:,:,:]
-        tmpLabel = np.zeros((1, label.shape[0], label.shape[1], 21))
+        tmpLabels = np.zeros((1, label.shape[0], label.shape[1], 21))
         for i in range(21):
-            tmpLabel[0, :, :, i] = (label == i)
+            tmpLabels[0, :, :, i] = (label == i)
+
+        tmpLabel = np.zeros((1, 2*self.padding_length+label.shape[0], 2*self.padding_length+label.shape[1], NUM_CLASSES))
+        tmpLabel[0,self.padding_length:self.padding_length+label.shape[0],self.padding_length:self.padding_length+label.shape[1],:] = tmpLabels[0,:,:,:]
         '''
         for i in range(21):
             print(np.sum(tmpLabel[0,:,:,i] == 1))
