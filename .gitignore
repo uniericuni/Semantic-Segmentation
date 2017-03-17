@@ -5,3 +5,5 @@ models/*
 
 *.pdf
 *.pyc
+
+.DS_Store
