@@ -40,6 +40,7 @@ import re
 import sys
 import tarfile
 import tensorflow as tf
+import numpy as np
 
 from config import *
 from six.moves import urllib
@@ -193,7 +194,7 @@ def computeShape(shape, bottom, stride):
         kernel_size = 0
         new_shape = [shape[0], shape[1]+kernel_size, shape[2]+kernel_size, NUM_CLASSES]
 
-    return tf.stack(new_shape) 
+    return tf.stack(new_shape)
 
 def inference(images, labels):
     # We instantiate all variables using tf.get_variable() instead of
@@ -221,15 +222,15 @@ def inference(images, labels):
 
     # fully connected 6
     with tf.variable_scope('fc6') as scope:
-        kernel = _variable_with_weight_decay('weights',
+        kernel = _variable_with_weight_decay(   'weights',
                                                 shape=[7, 7, 512, 4096],
                                                 stddev=5e-2,
                                                 wd=1*WEIGHT_DECAY)
         conv = tf.nn.conv2d(pool5, kernel, [1, 1, 1, 1], padding='VALID')
-        biases = _bias_with_weight_decay( 'biases',
-                                        shape=[4096],
-                                        val=0.0,
-                                        wd=0*WEIGHT_DECAY)
+        biases = _bias_with_weight_decay(   'biases',
+                                            shape=[4096],
+                                            val=0.0,
+                                            wd=0*WEIGHT_DECAY)
         pre_activation = tf.nn.bias_add(conv, biases)
         fc6 = tf.nn.relu(pre_activation, name=scope.name)
         _activation_summary(fc6)
@@ -239,15 +240,15 @@ def inference(images, labels):
 
     # fully connected 7
     with tf.variable_scope('fc7') as scope:
-        kernel = _variable_with_weight_decay('weights',
+        kernel = _variable_with_weight_decay(   'weights',
                                                 shape=[1, 1, 4096, 4096],
                                                 stddev=5e-2,
                                                 wd=1*WEIGHT_DECAY)
         conv = tf.nn.conv2d(drop6, kernel, [1, 1, 1, 1], padding='VALID')
-        biases = _bias_with_weight_decay( 'biases',
-                                        shape=[4096],
-                                        val=0.0,
-                                        wd=0*WEIGHT_DECAY)
+        biases = _bias_with_weight_decay(   'biases',
+                                            shape=[4096],
+                                            val=0.0,
+                                            wd=0*WEIGHT_DECAY)
         pre_activation = tf.nn.bias_add(conv, biases)
         fc7 = tf.nn.relu(pre_activation, name=scope.name)
         _activation_summary(fc7)
@@ -257,22 +258,22 @@ def inference(images, labels):
 
     # score fr
     with tf.variable_scope('score_fr') as scope:
-        kernel = _variable_with_weight_decay('weights',
+        kernel = _variable_with_weight_decay(   'weights',
                                                 shape=[1, 1, 4096, 21],
                                                 stddev=5e-2,
                                                 wd=1*WEIGHT_DECAY)
         conv = tf.nn.conv2d(drop7, kernel, [1, 1, 1, 1], padding='VALID')
-        biases = _bias_with_weight_decay( 'biases',
-                                        shape=[21],
-                                        val=0.0,
-                                        wd=0*WEIGHT_DECAY)
+        biases = _bias_with_weight_decay(   'biases',
+                                            shape=[21],
+                                            val=0.0,
+                                            wd=0*WEIGHT_DECAY)
         pre_activation = tf.nn.bias_add(conv, biases)
         score_fr = tf.nn.relu(pre_activation, name=scope.name)
         _activation_summary(score_fr)
 
     # upscore2
     with tf.variable_scope('upscore2') as scope:
-        kernel = _variable_with_weight_decay('weights',
+        kernel = _variable_with_weight_decay(   'weights',
                                                 shape=[13, 13, NUM_CLASSES, NUM_CLASSES],
                                                 stddev=5e-2,
                                                 wd=False)
@@ -282,15 +283,15 @@ def inference(images, labels):
 
     # score_pool4
     with tf.variable_scope('score_pool4') as scope:
-        kernel = _variable_with_weight_decay('weights',
+        kernel = _variable_with_weight_decay(   'weights',
                                                 shape=[1, 1, 512, 21],
                                                 stddev=5e-2,
                                                 wd=1*WEIGHT_DECAY)
         conv = tf.nn.conv2d(pool4, kernel, [1, 1, 1, 1], padding='VALID')
-        biases = _bias_with_weight_decay( 'biases',
-                                        shape=[21],
-                                        val=0.0,
-                                        wd=0*WEIGHT_DECAY)
+        biases = _bias_with_weight_decay(   'biases',
+                                            shape=[21],
+                                            val=0.0,
+                                            wd=0*WEIGHT_DECAY)
         score_pool4 = tf.nn.bias_add(conv, biases)
         _activation_summary(score_pool4)
 
@@ -302,7 +303,7 @@ def inference(images, labels):
 
     # upscore16
     with tf.variable_scope('upscore16') as scope:
-        kernel = _variable_with_weight_decay('weights',
+        kernel = _variable_with_weight_decay(   'weights',
                                                 shape=[32, 32, NUM_CLASSES, NUM_CLASSES],
                                                 stddev=5e-2,
                                                 wd=False)
@@ -310,7 +311,21 @@ def inference(images, labels):
         upscore16 = tf.nn.conv2d_transpose(fuse_pool4, kernel, output_shape, [1, 16, 16, 1], padding='SAME')
         _activation_summary(upscore16)
 
-    # score
-    score = upscore16
+    # softmax
+    with tf.variable_scope('score') as scope:
+        score = tf.nn.softmax(upscore16)
 
     return score
+    '''
+    # score
+    with tf.variable_scope('score') as scope:
+        score = tf.image.extract_glimpse(   upscore16,
+                                            size = tf.shape(labels)[1:3],
+                                            offsets = tf.zeros([1,2]),
+                                            centered = True )
+        _activation_summary(score)
+
+    return tf.Print(score, [tf.shape(score)]);
+    # output
+    return upscore16
+    '''

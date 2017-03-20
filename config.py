@@ -1,5 +1,5 @@
 # model index
-MODEL_INDEX = 1
+MODEL_INDEX = 2
 
 # patchwise batch size
 BATCH_SIZE = 1

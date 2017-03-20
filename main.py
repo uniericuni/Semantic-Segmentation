@@ -25,10 +25,9 @@ def main(argv):
         for line in f:
             file_index = int(line)
         f.close()
-    f = open('./file_index', 'w+')
+    f = open('./file_index', 'a+')
     
     # import data
-    print(file_index)
     pascal_reader = read_pascal.PascalReader(file_index)
 
     # Create the model
@@ -39,7 +38,7 @@ def main(argv):
     # Define loss and optimizer
     cross_entropy = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y))
-    train_step = tf.train.GradientDescentOptimizer(LR).minimize(cross_entropy)
+    train_step = tf.train.AdamOptimizer(LR).minimize(cross_entropy)
 
     init = tf.global_variables_initializer()
     
@@ -63,7 +62,7 @@ def main(argv):
         save_path = saver.save(sess, "./models/model%s.ckpt"%MODEL_INDEX)
         loss.append(loss_val)
         f.write(str(file_index+i+1)+'\n')
-        print('Iteration: %s'%str(i) + ' | Filename: %s'%filename + ' | Model saved in file: %s'%save_path)
+        print('Iteration: %s'%str(i) + ' | Filename: %s'%filename + ' | Model saved in file: %s'%save_path + ' | Cross entropy loss: %s'%str(loss_val))
     np.save('./models/trCrossEntropyLoss%s'%MODEL_INDEX, np.array(loss))
     
     # Testing
