@@ -26,6 +26,7 @@ def main(argv):
             file_index = int(line)
         f.close()
     f = open('./file_index', 'a+')
+    logs = open('./log', 'a+')
     
     # import data
     pascal_reader = read_pascal.PascalReader(file_index)
@@ -57,12 +58,15 @@ def main(argv):
     loss = []
     for i in range(MAX_ITER):
         batch_xs, batch_ys, filename = pascal_reader.next_batch(BATCH_SIZE)
-        #cross_entropy = -tf.reduce_sum(y_ * tf.log(y))
         _, loss_val = sess.run([train_step,cross_entropy], feed_dict={x: batch_xs, y_: batch_ys})
         save_path = saver.save(sess, "./models/model%s.ckpt"%MODEL_INDEX)
         loss.append(loss_val)
         f.write(str(file_index+i+1)+'\n')
-        print('Iteration: %s'%str(i) + ' | Filename: %s'%filename + ' | Model saved in file: %s'%save_path + ' | Cross entropy loss: %s'%str(loss_val))
+        log = 'Iteration: %s'%str(i) + ' | Filename: %s'%filename + ' | Model saved in file: %s'%save_path + ' | Cross entropy loss: %s'%str(loss_val)
+        logs.write(log+'\n')
+        print(log)
+    logs.close()
+        
     np.save('./models/trCrossEntropyLoss%s'%MODEL_INDEX, np.array(loss))
     
     # Testing
